@@ -21,8 +21,22 @@ const supportedLocales = locales.all
     region: string;
   }[];
 
+const exampleButtons =
+  ["example_good",
+   "example_czech",
+   "example_czech_bad",
+   "example_czech_no_selectors",
+   "example_czech_no_plural_selectors",
+   "example_czech_not_plural_category",
+   "example_czech_multiple_selectors",
+   "example_czech_multiple_selectors_bad",
+   "example_czech_partial_wildcards",
+   "example_parse_error",
+   "example_czech_aliasing"];
+
 document.addEventListener("DOMContentLoaded", () => {
   const localeSelect = document.getElementById("locale") as HTMLSelectElement;
+  const exampleCzechButton = document.getElementById("example_czech") as HTMLButtonElement;
   const messageArea = document.getElementById("message") as HTMLTextAreaElement;
   const messageErrors = document.getElementById(
     "message-errors",
@@ -33,6 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ) as HTMLDivElement;
 
   localeSelect.addEventListener("change", onUpdate);
+  exampleButtons.forEach((buttonId) => {
+    const button = document.getElementById(buttonId) as HTMLButtonElement;
+    button.addEventListener('click', exampleButton(buttonId))
+  });
   messageArea.addEventListener("input", onUpdate);
 
   localeSelect.innerHTML = "";
@@ -92,4 +110,169 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("/", "_").replaceAll("+", "-").replaceAll("=", "");
     history.replaceState(null, "", hash);
   }
+
+  function exampleButton(buttonId: string) {
+    return () => {
+      switch (buttonId) {
+        case "example_good": {
+          localeSelect.value = "en-US";
+          messageArea.value =
+     ".input {$numDays :number}\n\
+.match $numDays\n\
+one   {{{$numDays} day}}\n\
+other {{{$numDays} days}}\n\
+*     {{{$numDays} days}}";
+          break;
+        }
+        case "example_czech": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+.match $numDays\n\
+one   {{{$numDays} den}}\n\
+few   {{{$numDays} dny}}\n\
+many  {{{$numDays} dne}}\n\
+other {{{$numDays} dni}}\n\
+*     {{{$numDays} dní}}";
+           break;
+        }
+        case "example_czech_bad": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+.match $numDays\n\
+one   {{{$numDays} den}}\n\
+few   {{{$numDays} dny}}\n\
+*     {{{$numDays} dní}}";
+          break;
+       }
+       case "example_czech_no_selectors": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+{{{$numDays}}}"
+          break;
+       }
+       case "example_czech_no_plural_selectors": {
+          localeSelect.value = "en-US";
+          messageArea.value =
+".input {$numDays :func}\n\
+.match $numDays\n\
+one   {{{$numDays} day}}\n\
+other {{{$numDays} days}}\n\
+*     {{{$numDays} days}}";
+          break;
+       }
+       case "example_czech_not_plural_category": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+.match $numDays\n\
+one   {{{$numDays} den}}\n\
+few   {{{$numDays} dny}}\n\
+many  {{{$numDays} dne}}\n\
+other {{{$numDays} dni}}\n\
+boatloads {{{$numDays} dní}}\n\
+*     {{{$numDays} dní}}";
+          break;
+       }
+       case "example_czech_multiple_selectors": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+.input {$count :number}\n\
+.match $numDays $count\n\
+one  one   {{{$numDays} den}}\n\
+one  few   {{{$numDays} den}}\n\
+one  many  {{{$numDays} den}}\n\
+one  other {{{$numDays} den}}\n\
+few  one  {{{$numDays} dny}}\n\
+few  few  {{{$numDays} dny}}\n\
+few  many  {{{$numDays} dny}}\n\
+few  other  {{{$numDays} dny}}\n\
+many one {{{$numDays} dne}}\n\
+many few {{{$numDays} dne}}\n\
+many many {{{$numDays} dne}}\n\
+many other {{{$numDays} dne}}\n\
+other one {{{$numDays} dni}}\n\
+other few {{{$numDays} dni}}\n\
+other many {{{$numDays} dni}}\n\
+other other {{{$numDays} dni}}\n\
+* *    {{{$numDays} dní}}";
+           break;
+       }
+       case "example_czech_multiple_selectors_bad": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+.input {$count :number}\n\
+.match $numDays $count\n\
+one  one   {{{$numDays} den}}\n\
+one  few   {{{$numDays} den}}\n\
+one  other {{{$numDays} den}}\n\
+few  one  {{{$numDays} dny}}\n\
+few  few  {{{$numDays} dny}}\n\
+few  many  {{{$numDays} dny}}\n\
+few  other  {{{$numDays} dny}}\n\
+many one {{{$numDays} dne}}\n\
+many few {{{$numDays} dne}}\n\
+many other {{{$numDays} dne}}\n\
+other one {{{$numDays} dni}}\n\
+other few {{{$numDays} dni}}\n\
+other many {{{$numDays} dni}}\n\
+other other {{{$numDays} dni}}\n\
+* *    {{{$numDays} dní}}";
+          break;
+       }
+       case "example_czech_partial_wildcards": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays :number}\n\
+.input {$count :number}\n\
+.match $numDays $count\n\
+one  one   {{{$numDays} den}}\n\
+one  few   {{{$numDays} den}}\n\
+one  many  {{{$numDays} den}}\n\
+one  other {{{$numDays} den}}\n\
+few  *  {{{$numDays} dny}}\n\
+many one {{{$numDays} dne}}\n\
+many few {{{$numDays} dne}}\n\
+many many {{{$numDays} dne}}\n\
+many other {{{$numDays} dne}}\n\
+other one {{{$numDays} dni}}\n\
+other few {{{$numDays} dni}}\n\
+other many {{{$numDays} dni}}\n\
+other other {{{$numDays} dni}}\n\
+* *    {{{$numDays} dní}}";
+          break;
+       }
+       case "example_parse_error": {
+          localeSelect.value = "en-US";
+          messageArea.value =
+".input {$numDays :number}\n\
+.atch $numDays\n\
+one   {{{$numDays} day}}\n\
+other {{{$numDays} days}}\n\
+*     {{{$numDays} days}}";
+          break;
+       }
+       case "example_czech_aliasing": {
+          localeSelect.value = "cs-CZ";
+          messageArea.value =
+".input {$numDays1 :number}\n\
+.local $numDays = {$numDays1}\n\
+.match $numDays\n\
+one   {{{$numDays} den}}\n\
+few   {{{$numDays} dny}}\n\
+many  {{{$numDays} dne}}\n\
+other {{{$numDays} dni}}\n\
+*     {{{$numDays} dní}}";
+        }
+        default:
+           break;
+      }
+      onUpdate();
+    }
+  }
+
 });

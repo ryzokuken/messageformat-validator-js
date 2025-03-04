@@ -95,6 +95,75 @@ export default function IndexPage() {
           >
           </pre>
         </div>
+
+        <div class="col-span-2">
+          <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+            Examples
+          </h2>
+             <h3 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+               Correct messages
+             </h3>
+                <button class="exampleButton"
+                  id="example_good"
+                >
+                  English example; correct plural usage
+                </button>
+                <button class="exampleButton"
+                  id="example_czech"
+                >
+                  Czech example; correct plural usage
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_multiple_selectors"
+                >
+                  Czech example; multiple selectors
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_aliasing"
+                >
+                  Czech example; uses aliasing
+                </button>
+
+             <h3 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+               Messages with errors
+             </h3>
+                <button class="exampleButton"
+                  id="example_czech_bad"
+                >
+                  Czech example; incorrect plural usage (missing variants)
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_no_selectors"
+                >
+                  Czech example; no selectors
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_no_plural_selectors"
+                >
+                  Czech example; no plural selectors
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_not_plural_category"
+                >
+                  Czech example; uses key that's not a plural category
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_multiple_selectors_bad"
+                >
+                  Czech example; multiple selectors (missing cases)
+                </button>
+                <button class="exampleButton"
+                  id="example_czech_partial_wildcards"
+                >
+                  Czech example; partial wildcards
+                </button>
+                <button class="exampleButton"
+                  id="example_parse_error"
+                >
+                  English example; syntactically incorrect message
+                </button>
+        </div>
+
       </div>
 
     </>
