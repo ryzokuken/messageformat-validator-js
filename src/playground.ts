@@ -1,6 +1,6 @@
 import locales from "npm:locale-codes@1.3.1";
 import { formatMessageToHTML, MessageFormat } from "./_utils/message_format.ts";
-import { parseMessage, validateMessage, Message } from "./_utils/validate_message.ts";
+import { parseMessage, validatePlurals, validatePlaceholders, Message } from "./_utils/validate_message.ts";
 
 const supportedLocales = locales.all
   .map((locale) => {
@@ -32,47 +32,69 @@ const exampleButtons =
    "example_czech_multiple_selectors_bad",
    "example_czech_partial_wildcards",
    "example_parse_error",
-   "example_czech_aliasing"];
+   "example_czech_aliasing",
+   "example_placeholders"];
+
+function createOption(document, locale, name, region) {
+  const option = document.createElement("option");
+  option.value = locale.baseName;
+  option.textContent = `${name} (${region})`;
+  if (locale.baseName === "en-US") {
+    option.selected = true;
+  }
+  return option;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-  const localeSelect = document.getElementById("locale") as HTMLSelectElement;
-  const exampleCzechButton = document.getElementById("example_czech") as HTMLButtonElement;
-  const messageArea = document.getElementById("message") as HTMLTextAreaElement;
-  const messageErrors = document.getElementById(
-    "message-errors",
+  const sourceLocaleSelect = document.getElementById("sourceLocale") as HTMLSelectElement;
+  const targetLocaleSelect = document.getElementById("targetLocale") as HTMLSelectElement;
+  const sourceMessageArea = document.getElementById("sourceMessage") as HTMLTextAreaElement;
+  const targetMessageArea = document.getElementById("targetMessage") as HTMLTextAreaElement;
+  const sourceMessageErrors = document.getElementById(
+    "source-message-errors",
   ) as HTMLDivElement;
-  const pluralValidationArea = document.getElementById("pluralValidation") as HTMLDivElement;
-  const outputErrors = document.getElementById(
-    "output-errors",
+  const targetMessageErrors = document.getElementById(
+    "target-message-errors",
+  ) as HTMLDivElement;
+  const sourcePluralValidationArea = document.getElementById("pluralValidationSource") as HTMLDivElement;
+  const targetPluralValidationArea = document.getElementById("pluralValidationTarget") as HTMLDivElement;
+  const placeholderArea = document.getElementById("placeholderCheck") as HTMLDivElement;
+  const sourceOutputErrors = document.getElementById(
+    "source-output-errors",
+  ) as HTMLDivElement;
+  const targetOutputErrors = document.getElementById(
+    "target-output-errors",
   ) as HTMLDivElement;
 
-  localeSelect.addEventListener("change", onUpdate);
+  sourceLocaleSelect.addEventListener("change", onUpdate);
+  targetLocaleSelect.addEventListener("change", onUpdate);
   exampleButtons.forEach((buttonId) => {
     const button = document.getElementById(buttonId) as HTMLButtonElement;
     button.addEventListener('click', exampleButton(buttonId))
   });
-  messageArea.addEventListener("input", onUpdate);
+  sourceMessageArea.addEventListener("input", onUpdate);
+  targetMessageArea.addEventListener("input", onUpdate);
 
-  localeSelect.innerHTML = "";
+  sourceLocaleSelect.innerHTML = "";
+  targetLocaleSelect.innerHTML = "";
 
   for (const { locale, name, region } of supportedLocales) {
-    const option = document.createElement("option");
-    option.value = locale.baseName;
-    option.textContent = `${name} (${region})`;
-    if (locale.baseName === "en-US") {
-      option.selected = true;
-    }
-    localeSelect.appendChild(option);
+    sourceLocaleSelect.appendChild(createOption(document, locale, name, region));
+    targetLocaleSelect.appendChild(createOption(document, locale, name, region));
   }
 
   const hash = globalThis.location.hash.slice(1);
   try {
     if (hash) {
-      const [encodedMessage, encodedData, encodedLocale] = hash.split(".");
-      const message = atob(encodedMessage);
-      const locale = atob(encodedLocale);
-      messageArea.value = message;
-      localeSelect.value = locale;
+      const [encodedSourceMessage, encodedTargetMessage, encodedSourceLocale, encodedTargetLocale] = hash.split(".");
+      const sourceMessage = atob(encodedSourceMessage);
+      const sourceLocale = atob(encodedSourceLocale);
+      const targetMessage = atob(encodedTargetMessage);
+      const targetLocale = atob(encodedTargetLocale);
+      sourceMessageArea.value = sourceMessage;
+      targetMessageArea.value = targetMessage;
+      sourceLocaleSelect.value = sourceLocale;
+      targetLocaleSelect.value = targetLocale;
       onUpdate();
     }
   } catch (_) {
@@ -80,43 +102,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function onUpdate() {
-    const locale: string = localeSelect.value;
-    const message = messageArea.value;
+    const sourceMessage = sourceMessageArea.value;
+    const targetMessage = targetMessageArea.value;
 
-    messageErrors.textContent = "";
-    messageErrors.hidden = true;
-    pluralValidationArea.textContent = "";
-    outputErrors.textContent = "";
-    outputErrors.hidden = true;
+    sourceMessageErrors.textContent = "";
+    sourceMessageErrors.hidden = true;
+    sourcePluralValidationArea.textContent = "";
+    sourceOutputErrors.textContent = "";
+    sourceOutputErrors.hidden = true;
+    targetMessageErrors.textContent = "";
+    targetMessageErrors.hidden = true;
+    targetPluralValidationArea.textContent = "";
+    targetOutputErrors.textContent = "";
+    targetOutputErrors.hidden = true;
 
-    let mf2: Message | null = null;
+    let sourceMf2: Message | null = null;
     try {
-      mf2 = parseMessage(message);
+      sourceMf2 = parseMessage(sourceMessage);
     } catch (e) {
-      messageErrors.textContent = (e as Error).message;
-      messageErrors.hidden = false;
+      sourcePluralValidationArea.textContent = (e as Error).message;
+    }
+    let targetMf2: Message | null = null;
+    try {
+      targetMf2 = parseMessage(targetMessage);
+    } catch (e) {
+      targetPluralValidationArea.textContent = (e as Error).message;
     }
 
-    if (mf2 !== null) {
-       const validatorOutput = validateMessage(locale, mf2);
-       pluralValidationArea.textContent = validatorOutput;
-       pluralValidationArea.hidden = false;
+    if (sourceMf2 !== null) {
+       const validatorOutput = validatePlurals(sourceLocale.value, sourceMf2);
+       sourcePluralValidationArea.textContent = validatorOutput;
+    }
+    if (targetMf2 !== null) {
+       const validatorOutput = validatePlurals(targetLocale.value, targetMf2);
+       targetPluralValidationArea.textContent = validatorOutput;
+    }
+    if (sourceMf2 !== null && targetMf2 !== null) {
+       const placeholderOutput = validatePlaceholders(sourceLocale.value,
+                                                      targetLocale.value,
+                                                      sourceMf2,
+                                                      targetMf2);
+       placeholderArea.textContent = placeholderOutput;
     }
 
-    outputErrors.hidden = true;
-    const encodedMessage = btoa(messageArea.value);
-    const encodedLocale = btoa(localeSelect.value);
-    const hash = `#${encodedMessage}.${encodedLocale}`
+    const encodedSourceMessage = btoa(sourceMessageArea.value);
+    const encodedTargetMessage = btoa(targetMessageArea.value);
+    const encodedSourceLocale = btoa(sourceLocaleSelect.value);
+    const encodedTargetLocale = btoa(targetLocaleSelect.value);
+    const hash = `#${encodedSourceMessage}.${encodedTargetMessage}.${encodedSourceLocale}.${encodedTargetLocale}`
       .replaceAll("/", "_").replaceAll("+", "-").replaceAll("=", "");
     history.replaceState(null, "", hash);
   }
 
   function exampleButton(buttonId: string) {
     return () => {
+      var clearTarget: boolean = true;
       switch (buttonId) {
         case "example_good": {
-          localeSelect.value = "en-US";
-          messageArea.value =
+          sourceLocaleSelect.value = "en-US";
+          sourceMessageArea.value =
      ".input {$numDays :number}\n\
 .match $numDays\n\
 one   {{{$numDays} day}}\n\
@@ -125,8 +169,8 @@ other {{{$numDays} days}}\n\
           break;
         }
         case "example_czech": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .match $numDays\n\
 one   {{{$numDays} den}}\n\
@@ -137,8 +181,8 @@ other {{{$numDays} dni}}\n\
            break;
         }
         case "example_czech_bad": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .match $numDays\n\
 one   {{{$numDays} den}}\n\
@@ -147,15 +191,15 @@ few   {{{$numDays} dny}}\n\
           break;
        }
        case "example_czech_no_selectors": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 {{{$numDays}}}"
           break;
        }
        case "example_czech_no_plural_selectors": {
-          localeSelect.value = "en-US";
-          messageArea.value =
+          sourceLocaleSelect.value = "en-US";
+          sourceMessageArea.value =
 ".input {$numDays :func}\n\
 .match $numDays\n\
 one   {{{$numDays} day}}\n\
@@ -164,8 +208,8 @@ other {{{$numDays} days}}\n\
           break;
        }
        case "example_czech_not_plural_category": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .match $numDays\n\
 one   {{{$numDays} den}}\n\
@@ -177,8 +221,8 @@ boatloads {{{$numDays} dní}}\n\
           break;
        }
        case "example_czech_multiple_selectors": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .input {$count :number}\n\
 .match $numDays $count\n\
@@ -202,8 +246,8 @@ other other {{{$numDays} dni}}\n\
            break;
        }
        case "example_czech_multiple_selectors_bad": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .input {$count :number}\n\
 .match $numDays $count\n\
@@ -225,8 +269,8 @@ other other {{{$numDays} dni}}\n\
           break;
        }
        case "example_czech_partial_wildcards": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .input {$count :number}\n\
 .match $numDays $count\n\
@@ -247,8 +291,8 @@ other other {{{$numDays} dni}}\n\
           break;
        }
        case "example_parse_error": {
-          localeSelect.value = "en-US";
-          messageArea.value =
+          sourceLocaleSelect.value = "en-US";
+          sourceMessageArea.value =
 ".input {$numDays :number}\n\
 .atch $numDays\n\
 one   {{{$numDays} day}}\n\
@@ -257,8 +301,8 @@ other {{{$numDays} days}}\n\
           break;
        }
        case "example_czech_aliasing": {
-          localeSelect.value = "cs-CZ";
-          messageArea.value =
+          sourceLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
 ".input {$numDays1 :number}\n\
 .local $numDays = {$numDays1}\n\
 .match $numDays\n\
@@ -268,8 +312,32 @@ many  {{{$numDays} dne}}\n\
 other {{{$numDays} dni}}\n\
 *     {{{$numDays} dní}}";
         }
+        case "example_placeholders": {
+          console.log("1");
+          clearTarget = false;
+          sourceLocaleSelect.value = "en-US";
+          targetLocaleSelect.value = "cs-CZ";
+          sourceMessageArea.value =
+".input {$numDays :number}\n\
+.match $numDays\n\
+one   {{{$numDays} day}}\n\
+other {{{$numDays} days}}\n\
+*     {{{$numDays} days}}\n";
+          targetMessageArea.value =
+".input {$numDays :number}\n\
+.match $numDays\n\
+one   {{{$numDays} den}}\n\
+few   {{{$numDays} dny}}\n\
+many  {{{$numDays} dne}}\n\
+other {{numDays dni}}\n\
+*     {{{$numDays} dní}}";
+           break;
+        }
         default:
            break;
+      }
+      if (clearTarget) {
+        targetMessageArea.value = "";
       }
       onUpdate();
     }

@@ -42,31 +42,64 @@ export default function IndexPage() {
 
       <div class="grid grid-cols-2 px-8 mt-6 mb-12 mx-auto max-w-screen-lg gap-4">
 
-        <div class="h-80 flex flex-col">
-          <label for="message">
+        <div class="h-80 flex flex-col grid-cols-subgrid">
+          <label for="sourceMessage">
             <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
-              Message
+              Source message
             </h2>
           </label>
           <textarea
-            id="message"
+            id="sourceMessage"
             class="w-full h-full resize-none font-mono p-4 bg-gray-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             placeholder="Type your message here..."
           >
 
           </textarea>
+        </div>
+
+        <div class="h-80 flex flex-col grid-cols-subgrid">
+          <label for="targetMessage">
+            <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+              Target message
+            </h2>
+          </label>
+          <textarea
+            id="targetMessage"
+            class="w-full h-full resize-none font-mono p-4 bg-gray-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            placeholder="Type your message here..."
+          >
+
+          </textarea>
+         </div>
 
          <div class="flex gap-6 items-end">
           <div class="flex flex-col">
             <label
-             for="locale"
+             for="sourceLocale"
              class="text-md font-bold font-serif px-2 text-blue-50"
             >
             <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
-               Locale
+               Source locale
             </h2>
             </label>
-            <select id="locale" class="w-52 p-2 rounded-lg bg-gray-100">
+            <select id="sourceLocale" class="w-52 p-2 rounded-lg bg-gray-100">
+                  <option id="en-US">English (United States)</option>
+                  <option disabled>Loading...</option>
+            </select>
+          </div>
+        </div>
+
+         <div class="flex gap-6 items-end">
+          <div class="flex flex-col">
+            <label
+             for="targetLocale"
+             class="text-md font-bold font-serif px-2 text-blue-50"
+            >
+            <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+               Target locale
+            </h2>
+            </label>
+            <select id="targetLocale" class="w-52 p-2 rounded-lg bg-gray-100">
                   <option id="en-US">English (United States)</option>
                   <option disabled>Loading...</option>
             </select>
@@ -74,22 +107,58 @@ export default function IndexPage() {
         </div>
 
           <div
-            id="message-errors"
+            id="source-message-errors"
             class="text-red-600 bg-red-50 p-4 mt-2 rounded-lg"
             hidden
           >
           </div>
+
+          <div
+            id="target-message-errors"
+            class="text-red-600 bg-red-50 p-4 mt-2 rounded-lg"
+            hidden
+          >
+          </div>
+
+        <div class="flex-col">
+          <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+            Plural validation result (source message)
+          </h2>
+          <div class="border rounded-md p-6 text-lg min-h-20" id="pluralValidationSource">
+            Plurals used correctly
+          </div>
+          <pre
+            id="source-output-errors"
+            class="text-red-600 bg-red-50 p-4 mt-2 rounded-lg font-mono"
+            hidden
+          >
+          </pre>
+        </div>
+
+        <div class="flex-col">
+          <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
+            Plural validation result (target message)
+          </h2>
+          <div class="border rounded-md p-6 text-lg min-h-20" id="pluralValidationTarget">
+            Plurals used correctly
+          </div>
+          <pre
+            id="target-output-errors"
+            class="text-red-600 bg-red-50 p-4 mt-2 rounded-lg font-mono"
+            hidden
+          >
+          </pre>
         </div>
 
         <div class="col-span-2">
           <h2 class="text-xl font-bold font-serif px-2 pb-1 text-black">
-            Plural validation result
+            Placeholder checking result
           </h2>
-          <div class="border rounded-md p-6 text-lg min-h-20" id="pluralValidation">
-            Plurals used correctly
+          <div class="border rounded-md p-6 text-lg min-h-20" id="placeholderCheck">
+            Placeholders used correctly
           </div>
           <pre
-            id="output-errors"
+            id="placeholder-errors"
             class="text-red-600 bg-red-50 p-4 mt-2 rounded-lg font-mono"
             hidden
           >
@@ -162,6 +231,12 @@ export default function IndexPage() {
                 >
                   English example; syntactically incorrect message
                 </button>
+                <button class="exampleButton"
+                  id="example_placeholders"
+                >
+                  English and Czech examples; inconsistent placeholders
+                </button>
+
         </div>
 
       </div>

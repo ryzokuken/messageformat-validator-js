@@ -7,6 +7,7 @@ import {
   SelectMessage,
   VariableRef,
   Variant,
+  isPatternMessage,
   isSelectMessage,
   parseMessage
 } from "npm:messageformat@4.0.0-8";
@@ -224,7 +225,7 @@ function checkPlurals(categories: string[],
   return result;
 }
 
-export function validateMessage(
+export function validatePlurals(
        locale: string,
        message: Message) : string {
   const forms: string[] = plural.forms(locale);
@@ -235,4 +236,84 @@ export function validateMessage(
   const pluralsResult: string = checkPlurals(forms, message);
 
   return pluralsResult;
+}
+
+function collectPlaceholders(message: Message) : [Set<string>, string] {
+    // This collects the placeholders from the first variant,
+    // then warns if any other variants use different placeholders.
+
+    const variants: Variant[] = message.variants;
+    var placeholders: Set<string> = new Set<string>();
+    var first: boolean = true;
+    var stringResult: string = "";
+
+    for (var variant of variants) {
+      const pat: Pattern = variant.value;
+      for (var part of pat) {
+        if (part.type !== undefined && part.type === 'expression') {
+           const exprPart: Expression = part as Expression;
+           const operand: Literal | VariableRef | undefined = exprPart.arg;
+           if (operand.type !== undefined && operand.type === 'variable') {
+             const placeholder: VariableRef = operand.name;
+             if (!placeholders.has(placeholder) && !first) {
+               stringResult += `Warning: not all variants in source message contain the same set of placeholders.\
+ The placeholder ${placeholder} does not appear in every variant.`;
+             } else if (first) {
+               placeholders.add(placeholder);
+             }
+           }
+        }
+     }
+     first = false;
+   }
+   return [placeholders, stringResult];
+}
+
+function variantContains(variant: Variant, placeholder: string): boolean {
+  const pat: Pattern = variant.value;
+  for (var part of pat) {
+    if (part.type !== undefined && part.type === 'expression') {
+        const exprPart: Expression = part as Expression;
+        const operand: Literal | VariableRef | undefined = exprPart.arg;
+        if (operand.type !== undefined && operand.type === 'variable') {
+          if (operand.name === placeholder) {
+            return true;
+          }
+        }
+    }
+  }
+  return false;
+}
+
+function keyToString(key: Literal | CatchallKey): string {
+  if (key.type === 'literal') {
+    return key.value;
+  }
+  return '*';
+}
+
+function keysToString(keys: Array<Literal | CatchallKey>): string {
+  return keys.map(keyToString).join(', ');
+}
+
+export function validatePlaceholders(
+       sourceLocale: string,
+       targetLocale: string,
+       sourceMessage: Message,
+       targetMessage: Message) : string {
+  if (isPatternMessage(sourceMessage) || isPatternMessage(targetMessage)) {
+    return "Warning: source and/or target messages don't have variants.";
+  }
+  var result: string = "";
+  [sourcePlaceholders, errors] = collectPlaceholders(sourceMessage);
+  result += errors;
+  const targetVariants: Variant[] = targetMessage.variants;
+  for (var variant of targetVariants) {
+    for (var placeholder of sourcePlaceholders) {
+      if (!variantContains(variant, placeholder)) {
+        result += `In target message, variant with keys «${keysToString(variant.keys)}» omits placeholder: $${placeholder}`;
+      }
+    }
+  }
+  return result;
 }
