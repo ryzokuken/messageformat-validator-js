@@ -4,6 +4,10 @@ A validator for MessageFormat 2.0. Currently validates correct use of plural sel
 
 Based on messageformat.dev, which is developed by Luca Casonato (@lucacasonato).
 
+For more details about the functionality of the validator, see:
+
+https://github.com/catamorphism/mf2-validator/blob/main/README.md
+
 ## Development
 
 1. Install Deno (https://deno.land/)
@@ -18,6 +22,4 @@ deno task serve
 
 ## License
 
-The textual content of this website is licensed under the Creative Commons
-Attribution 4.0 International License (CC BY 4.0). The code is licensed under
-the MIT License.
+Licensed under the MIT License.
