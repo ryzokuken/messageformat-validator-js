@@ -35,7 +35,7 @@ const exampleButtons =
    "example_czech_aliasing",
    "example_placeholders"];
 
-function createOption(document, locale, name, region) {
+function createOption(document: any, locale: Intl.Locale, name: string, region: string) {
   const option = document.createElement("option");
   option.value = locale.baseName;
   option.textContent = `${name} (${region})`;
@@ -130,16 +130,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (sourceMf2 !== null) {
-       const validatorOutput = validatePlurals(sourceLocale.value, sourceMf2);
+       const validatorOutput = validatePlurals(sourceLocaleSelect.value, sourceMf2);
        sourcePluralValidationArea.textContent = validatorOutput;
     }
     if (targetMf2 !== null) {
-       const validatorOutput = validatePlurals(targetLocale.value, targetMf2);
+       const validatorOutput = validatePlurals(targetLocaleSelect.value, targetMf2);
        targetPluralValidationArea.textContent = validatorOutput;
     }
     if (sourceMf2 !== null && targetMf2 !== null) {
-       const placeholderOutput = validatePlaceholders(sourceLocale.value,
-                                                      targetLocale.value,
+       const placeholderOutput = validatePlaceholders(sourceLocaleSelect.value,
+                                                      targetLocaleSelect.value,
                                                       sourceMf2,
                                                       targetMf2);
        placeholderArea.textContent = placeholderOutput;

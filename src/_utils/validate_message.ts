@@ -4,6 +4,7 @@ import {
   Literal,
   MessageExpressionPart,
   Message,
+  Pattern,
   SelectMessage,
   VariableRef,
   Variant,
@@ -138,8 +139,30 @@ function keysEqual(ks: Array<Literal | CatchallKey>,
   return true;
 }
 
+function allOther(keys: string[]): boolean {
+  return keys.every((k) => k == "other");
+}
+
+function keysAllOther(keys: Array<Literal | CatchallKey>): boolean {
+  return keys.every((k) => k.type === 'literal' && (k as Literal).value !== 'other');
+}
+
+function missingOther(variants: Variant[]) : boolean {
+  for (var variant of variants) {
+    if (keysAllOther(variant.keys)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function variantExistsFor(variants: Variant[],
                           keys: string[]) : [boolean, string] {
+  // Special case: return true if `keys` is all `other`, as the `*` variant
+  // (checked for separately) accounts for that case
+  if (allOther(keys)) {
+    return [true, ""];
+  }
   for (var variant of variants) {
     if (variant.keys.length != keys.length) {
       return [ false, "Warning: variant has fewer keys than there are selectors" ];
@@ -200,9 +223,13 @@ function checkPlurals(categories: string[],
   const permutations: string[][] = generatePermutations(selectors.length, categories);
 
   var result: string = "";
+  var expectedLength = permutations.length + 1;
+  if (missingOther(variants)) {
+    expectedLength--;
+  }
   // Check that the number of variants == the number of permutations plus 1
-  if (variants.length != permutations.length + 1) {
-    result += `Error: incorrect number of variants: there are ${variants.length} and should be ${permutations.length + 1} including the wildcard variant. `;
+  if (variants.length != expectedLength) {
+    result += `Error: incorrect number of variants: there are ${variants.length} and should be ${expectedLength} including the wildcard variant. `;
   }
 
   // Check that each permutation has a corresponding variant
@@ -241,7 +268,7 @@ function collectPlaceholders(message: Message) : [Set<string>, string] {
     // This collects the placeholders from the first variant,
     // then warns if any other variants use different placeholders.
 
-    const variants: Variant[] = message.variants;
+    const variants: Variant[] = (message as SelectMessage).variants;
     var placeholders: Set<string> = new Set<string>();
     var first: boolean = true;
     var stringResult: string = "";
@@ -249,11 +276,11 @@ function collectPlaceholders(message: Message) : [Set<string>, string] {
     for (var variant of variants) {
       const pat: Pattern = variant.value;
       for (var part of pat) {
-        if (part.type !== undefined && part.type === 'expression') {
+        if (typeof(part) !== "string" && part.type !== undefined && part.type === 'expression') {
            const exprPart: Expression = part as Expression;
            const operand: Literal | VariableRef | undefined = exprPart.arg;
-           if (operand.type !== undefined && operand.type === 'variable') {
-             const placeholder: VariableRef = operand.name;
+           if (operand !== undefined && operand.type !== undefined && operand.type === 'variable') {
+             const placeholder: string = operand.name;
              if (!placeholders.has(placeholder) && !first) {
                stringResult += `Warning: not all variants in source message contain the same set of placeholders.\
  The placeholder ${placeholder} does not appear in every variant.`;
@@ -271,10 +298,10 @@ function collectPlaceholders(message: Message) : [Set<string>, string] {
 function variantContains(variant: Variant, placeholder: string): boolean {
   const pat: Pattern = variant.value;
   for (var part of pat) {
-    if (part.type !== undefined && part.type === 'expression') {
+    if (typeof(part) !== 'string' && part.type !== undefined && part.type === 'expression') {
         const exprPart: Expression = part as Expression;
         const operand: Literal | VariableRef | undefined = exprPart.arg;
-        if (operand.type !== undefined && operand.type === 'variable') {
+        if (operand !== undefined && operand.type !== undefined && operand.type === 'variable') {
           if (operand.name === placeholder) {
             return true;
           }
@@ -304,7 +331,7 @@ export function validatePlaceholders(
     return "Warning: source and/or target messages don't have variants.";
   }
   var result: string = "";
-  [sourcePlaceholders, errors] = collectPlaceholders(sourceMessage);
+  const [sourcePlaceholders, errors] = collectPlaceholders(sourceMessage);
   result += errors;
   const targetVariants: Variant[] = targetMessage.variants;
   for (var variant of targetVariants) {
