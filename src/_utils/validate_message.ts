@@ -11,7 +11,6 @@ import {
   isSelectMessage,
   parseMessage
 } from "npm:messageformat@4.0.0-8";
-import * as plural from "npm:plurals-cldr";
 export type { Message };
 export { parseMessage };
 
@@ -228,7 +227,7 @@ function checkPlurals(categories: string[],
 export function validatePlurals(
        locale: string,
        message: Message) : string {
-  const forms: string[] = plural.forms(locale);
+  const forms: string[] = new Intl.PluralRules(locale).resolvedOptions().pluralCategories
   if (forms == null) {
       return "error getting plural forms";
   }
