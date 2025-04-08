@@ -177,47 +177,72 @@ export default function IndexPage() {
           <h3 class="text-xl font-bold font-serif px-2 pb-1 text-black">
             Correct messages
           </h3>
-          <button class="exampleButton" id="example_good">
+          <button type="button" class="exampleButton" id="example_good">
             English example; correct plural usage
           </button>
-          <button class="exampleButton" id="example_czech">
+          <button type="button" class="exampleButton" id="example_czech">
             Czech example; correct plural usage
           </button>
-          <button class="exampleButton" id="example_czech_multiple_selectors">
+          <button
+            type="button"
+            class="exampleButton"
+            id="example_czech_multiple_selectors"
+          >
             Czech example; multiple selectors
           </button>
-          <button class="exampleButton" id="example_czech_aliasing">
+          <button
+            type="button"
+            class="exampleButton"
+            id="example_czech_aliasing"
+          >
             Czech example; uses aliasing
           </button>
 
           <h3 class="text-xl font-bold font-serif px-2 pb-1 text-black">
             Messages with errors
           </h3>
-          <button class="exampleButton" id="example_czech_bad">
+          <button type="button" class="exampleButton" id="example_czech_bad">
             Czech example; incorrect plural usage (missing variants)
           </button>
-          <button class="exampleButton" id="example_czech_no_selectors">
+          <button
+            type="button"
+            class="exampleButton"
+            id="example_czech_no_selectors"
+          >
             Czech example; no selectors
           </button>
-          <button class="exampleButton" id="example_czech_no_plural_selectors">
+          <button
+            type="button"
+            class="exampleButton"
+            id="example_czech_no_plural_selectors"
+          >
             Czech example; no plural selectors
           </button>
-          <button class="exampleButton" id="example_czech_not_plural_category">
+          <button
+            type="button"
+            class="exampleButton"
+            id="example_czech_not_plural_category"
+          >
             Czech example; uses key that's not a plural category
           </button>
           <button
+            type="button"
             class="exampleButton"
             id="example_czech_multiple_selectors_bad"
           >
             Czech example; multiple selectors (missing cases)
           </button>
-          <button class="exampleButton" id="example_czech_partial_wildcards">
+          <button
+            type="button"
+            class="exampleButton"
+            id="example_czech_partial_wildcards"
+          >
             Czech example; partial wildcards
           </button>
-          <button class="exampleButton" id="example_parse_error">
+          <button type="button" class="exampleButton" id="example_parse_error">
             English example; syntactically incorrect message
           </button>
-          <button class="exampleButton" id="example_placeholders">
+          <button type="button" class="exampleButton" id="example_placeholders">
             English and Czech examples; inconsistent placeholders
           </button>
         </div>

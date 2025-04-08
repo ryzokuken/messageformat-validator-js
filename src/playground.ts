@@ -1,5 +1,4 @@
 import locales from "npm:locale-codes@1.3.1";
-import { formatMessageToHTML, MessageFormat } from "./_utils/message_format.ts";
 import {
   Message,
   parseMessage,
@@ -42,7 +41,7 @@ const exampleButtons = [
 ];
 
 function createOption(
-  document: any,
+  document: Document,
   locale: Intl.Locale,
   name: string,
   region: string,
@@ -199,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function exampleButton(buttonId: string) {
     return () => {
-      var clearTarget: boolean = true;
+      let clearTarget: boolean = true;
       switch (buttonId) {
         case "example_good": {
           sourceLocaleSelect.value = "en-US";
@@ -343,6 +342,7 @@ few   {{{$numDays} dny}}\n\
 many  {{{$numDays} dne}}\n\
 other {{{$numDays} dni}}\n\
 *     {{{$numDays} dní}}";
+          break;
         }
         case "example_placeholders": {
           console.log("1");

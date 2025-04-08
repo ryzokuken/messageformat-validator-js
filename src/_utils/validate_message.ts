@@ -5,7 +5,6 @@ import {
   isSelectMessage,
   Literal,
   Message,
-  MessageExpressionPart,
   parseMessage,
   Pattern,
   SelectMessage,
@@ -18,7 +17,7 @@ export { parseMessage };
 function isPluralSelector(message: Message, variable: VariableRef): boolean {
   // Check if this variable's RHS has a `:number` annotation.
   const decls = message.declarations;
-  for (var decl of decls) {
+  for (const decl of decls) {
     if (decl.name == variable.name) {
       const rhs: Expression = decl.value;
       if (rhs.functionRef === undefined || rhs.functionRef === null) {
@@ -47,9 +46,9 @@ function isPluralSelector(message: Message, variable: VariableRef): boolean {
 }
 
 function partialWildcards(keys: Array<Literal | CatchallKey>): boolean {
-  var wildcardSeen: boolean = false;
-  var nonWildcardSeen: boolean = false;
-  for (var k of keys) {
+  let wildcardSeen: boolean = false;
+  let nonWildcardSeen: boolean = false;
+  for (const k of keys) {
     if (k.type === "literal") {
       nonWildcardSeen = true;
     } else if (k.type === "*") {
@@ -60,7 +59,7 @@ function partialWildcards(keys: Array<Literal | CatchallKey>): boolean {
 }
 
 function allWildcards(keys: Array<Literal | CatchallKey>): boolean {
-  for (var k of keys) {
+  for (const k of keys) {
     if (k.type === "literal") {
       return false;
     }
@@ -76,10 +75,10 @@ function insertEverywhere(
     return [[element]];
   }
 
-  var result: string[][] = [];
+  const result: string[][] = [];
   const permutationLen: number = permutations.length;
   permutations.forEach((perm: string[]) => {
-    for (var i = 0; i < permutationLen + 1; i++) {
+    for (let i = 0; i < permutationLen + 1; i++) {
       result.push(perm.toSpliced(i, 0, element));
     }
   });
@@ -90,7 +89,7 @@ function stringsEqual(p1: string[], p2: string[]) {
   if (p1.length != p2.length) {
     return false;
   }
-  for (var i = 0; i < p1.length; i++) {
+  for (let i = 0; i < p1.length; i++) {
     if (p1[i] !== p2[i]) {
       return false;
     }
@@ -99,7 +98,7 @@ function stringsEqual(p1: string[], p2: string[]) {
 }
 
 function contains(perms: string[][], perm: string[]) {
-  for (var p of perms) {
+  for (const p of perms) {
     if (stringsEqual(p, perm)) {
       return true;
     }
@@ -108,7 +107,7 @@ function contains(perms: string[][], perm: string[]) {
 }
 
 function addNoDuplicates(result: string[][], toAdd: string[][]) {
-  for (var perm of toAdd) {
+  for (const perm of toAdd) {
     if (!contains(result, perm)) {
       result.push(perm);
     }
@@ -118,7 +117,7 @@ function addNoDuplicates(result: string[][], toAdd: string[][]) {
 // It would be tempting to use a Set for this, but not feasible
 // since the elements are arrays.
 function generatePermutations(n: number, strings: string[]): string[][] {
-  var result: string[][] = [];
+  const result: string[][] = [];
   if (n === 0) {
     return result;
   }
@@ -138,7 +137,7 @@ function keysEqual(
   if (ks.length != keyNames.length) {
     return false;
   }
-  for (var i = 0; i < ks.length; i++) {
+  for (let i = 0; i < ks.length; i++) {
     if (ks[i].type !== "literal" || (ks[i] as Literal).value !== keyNames[i]) {
       return false;
     }
@@ -157,7 +156,7 @@ function keysAllOther(keys: Array<Literal | CatchallKey>): boolean {
 }
 
 function missingOther(variants: Variant[]): boolean {
-  for (var variant of variants) {
+  for (const variant of variants) {
     if (keysAllOther(variant.keys)) {
       return false;
     }
@@ -174,7 +173,7 @@ function variantExistsFor(
   if (allOther(keys)) {
     return [true, ""];
   }
-  for (var variant of variants) {
+  for (const variant of variants) {
     if (variant.keys.length != keys.length) {
       return [
         false,
@@ -198,8 +197,8 @@ function checkValidKeys(
   variants: Variant[],
   categories: string[],
 ): [boolean, string] {
-  for (var variant of variants) {
-    for (var k of variant.keys) {
+  for (const variant of variants) {
+    for (const k of variant.keys) {
       if (k.type === "*") {
         continue;
       }
@@ -223,7 +222,7 @@ function checkPlurals(categories: string[], message: Message): string {
 
   // Check that all selectors are plural; if any are non-plural, it's unclear
   // how many variants there should be
-  for (var sel of selectors) {
+  for (const sel of selectors) {
     if (!isPluralSelector(message, sel)) {
       return "Message uses non-plural selectors. Can't check exhaustiveness.";
     }
@@ -231,7 +230,7 @@ function checkPlurals(categories: string[], message: Message): string {
 
   // Check for partial wildcard variants (variants with multiple keys where
   // some are wildcards and some aren't)
-  for (var variant of variants) {
+  for (const variant of variants) {
     if (partialWildcards(variant.keys)) {
       return "Partial wildcard variant is present; not all permutations of categories are explicitly enumerated.";
     }
@@ -243,8 +242,8 @@ function checkPlurals(categories: string[], message: Message): string {
     categories,
   );
 
-  var result: string = "";
-  var expectedLength = permutations.length + 1;
+  let result: string = "";
+  let expectedLength = permutations.length + 1;
   if (missingOther(variants)) {
     expectedLength--;
   }
@@ -255,8 +254,8 @@ function checkPlurals(categories: string[], message: Message): string {
   }
 
   // Check that each permutation has a corresponding variant
-  var allOK: boolean = true;
-  for (var permutation of permutations) {
+  let allOK: boolean = true;
+  for (const permutation of permutations) {
     const [booleanResult, stringResult] = variantExistsFor(
       variants,
       permutation,
@@ -296,13 +295,13 @@ function collectPlaceholders(message: Message): [Set<string>, string] {
   // then warns if any other variants use different placeholders.
 
   const variants: Variant[] = (message as SelectMessage).variants;
-  var placeholders: Set<string> = new Set<string>();
-  var first: boolean = true;
-  var stringResult: string = "";
+  const placeholders: Set<string> = new Set<string>();
+  let first: boolean = true;
+  let stringResult: string = "";
 
-  for (var variant of variants) {
+  for (const variant of variants) {
     const pat: Pattern = variant.value;
-    for (var part of pat) {
+    for (const part of pat) {
       if (
         typeof part !== "string" && part.type !== undefined &&
         part.type === "expression"
@@ -331,7 +330,7 @@ function collectPlaceholders(message: Message): [Set<string>, string] {
 
 function variantContains(variant: Variant, placeholder: string): boolean {
   const pat: Pattern = variant.value;
-  for (var part of pat) {
+  for (const part of pat) {
     if (
       typeof part !== "string" && part.type !== undefined &&
       part.type === "expression"
@@ -363,20 +362,20 @@ function keysToString(keys: Array<Literal | CatchallKey>): string {
 }
 
 export function validatePlaceholders(
-  sourceLocale: string,
-  targetLocale: string,
+  _sourceLocale: string,
+  _targetLocale: string,
   sourceMessage: Message,
   targetMessage: Message,
 ): string {
   if (isPatternMessage(sourceMessage) || isPatternMessage(targetMessage)) {
     return "Warning: source and/or target messages don't have variants.";
   }
-  var result: string = "";
+  let result: string = "";
   const [sourcePlaceholders, errors] = collectPlaceholders(sourceMessage);
   result += errors;
   const targetVariants: Variant[] = targetMessage.variants;
-  for (var variant of targetVariants) {
-    for (var placeholder of sourcePlaceholders) {
+  for (const variant of targetVariants) {
+    for (const placeholder of sourcePlaceholders) {
       if (!variantContains(variant, placeholder)) {
         result += `In target message, variant with keys «${
           keysToString(variant.keys)
