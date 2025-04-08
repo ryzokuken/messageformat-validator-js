@@ -1,6 +1,7 @@
 # MessageFormat 2.0 online validator
 
-A validator for MessageFormat 2.0. Currently validates correct use of plural selectors.
+A validator for MessageFormat 2.0. Currently validates correct use of plural
+selectors.
 
 Based on messageformat.dev, which is developed by Luca Casonato (@lucacasonato).
 
