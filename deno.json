@@ -1,6 +1,6 @@
 {
   "imports": {
-    "lume/": "https://deno.land/x/lume@v2.2.3/",
+    "lume/": "https://deno.land/x/lume@v2.5.3/",
     "preact": "npm:preact"
   },
   "tasks": {
@@ -16,9 +16,15 @@
     "jsxImportSource": "preact"
   },
   "lint": {
-    "exclude": ["_site", "static"]
+    "exclude": [
+      "_site",
+      "static"
+    ]
   },
   "fmt": {
-    "exclude": ["_site", "static"]
+    "exclude": [
+      "_site",
+      "static"
+    ]
   }
 }
