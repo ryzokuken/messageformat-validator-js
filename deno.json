@@ -14,5 +14,11 @@
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
+  },
+  "lint": {
+    "exclude": ["_site", "static"]
+  },
+  "fmt": {
+    "exclude": ["_site", "static"]
   }
 }
